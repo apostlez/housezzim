@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+<script type="text/javascript" src="housezzim.js"></script>
+
+
+
+</head>
+<body>
+<div>
+<table>
+<tr>
+<td>
+<select id="select_year"></select>
+</td>
+</tr>
+<tr>
+<td>
+<a href="#" onclick="javascript:fnSubmit(); return false;">
+<button id="searchBtn">Search</button>
+</a>
+</td>
+</tr>
+</table>
+</div>
+<div>
+<p id="demo"></p>
+</div>
+</body>
+<script type="text/javascript">
+
+var yearList = {
+	    ValueA : 'Text A',
+	    ValueB : 'Text B',
+	    ValueC : 'Text C'
+	};
+
+var select = document.getElementById("select_year");
+	for(index in yearList) {
+	    select.options[select.options.length] = new Option(yearList[index], index);
+	}
+
+function fnSubmit() {
+	getData();
+	//parseResponse();
+}
+	
+</script>
+
+</html>
