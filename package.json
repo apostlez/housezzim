@@ -1,5 +1,19 @@
 {
-    "name": "housezzim",
-    "version":"1.0.0",
-    "main": "index.html"
+  "name": "housezzim",
+  "version": "1.0.0",
+  "main": "index.html",
+  "description": "summarize  trade history of real estate in Korea",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apostlez/housezzim.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/apostlez/housezzim/issues"
+  },
+  "homepage": "https://github.com/apostlez/housezzim#readme"
 }
