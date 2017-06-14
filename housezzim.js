@@ -1,57 +1,58 @@
 var strResponse = undefined;
 var searchResult = [];
 
-function getData() {
-	var yearStart = 2016;
+var search_addr = "";
+var search_detail_addr = "";
+
+function getData(lawd_cd, addr, detail_addr) {
+	search_addr = addr;
+	search_detail_addr = detail_addr;
+	var yearStart = 2006;
+	var ymEnd = "201705";
 	var month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-/*	
+	
+	var dataHandler = require("./dataHandler.js");
 	for(var i=yearStart;i<2017;i++) {
 		for(var j=0;j<12;j++) {
-			getDataOfYear( i + month[j], parseResponse);
+			if(ymEnd == (i + month[j])) return; 
+			strResponse = dataHandler.readCachedData(lawd_cd, i + month[j]);
+			if(!strResponse) {
+				dataHandler.getDataOfYear(lawd_cd, i + month[j], parseResponse);
+			} else {
+				parseResponse();
+			}
 		}
 	}
-*/
-	getDataOfYear( "201604", parseResponse);
-	getDataOfYear( "201612", parseResponse);
-	makeTable();
+
+//	strResponse = dataHandler.readCachedData("11680", "201604");
+//	if(!strResponse) {
+//		getDataOfYear( "201612", parseResponse);
+//	}
 }
 
-function getDataOfYear(deal_ymd, next) {
-	var xhr = new XMLHttpRequest();
-	var url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade';
-	var key = 'PPiKlLLG9jBJcNvGn1NH66usYobBBPGCSuAXht3gOJ5hCC1tKqlCwpSQDKqfIciXI9TYmqUcP3bRg7pw56Te8w%3D%3D';
-	var queryParams = '?serviceKey=' + key; /*Service Key*/
-	//queryParams += '&' + encodeURIComponent('LAWD_CD') + '=' + encodeURIComponent('11650'); /*¼­ÃÊ±¸*/
-	queryParams += '&' + encodeURIComponent('LAWD_CD') + '=' + encodeURIComponent('11680'); /*°­³²±¸*/
-	queryParams += '&' + encodeURIComponent('DEAL_YMD') + '=' + encodeURIComponent(deal_ymd); /*ÆÄ¶ó¹ÌÅÍ¼³¸í*/
-	xhr.open('GET', url + queryParams);
-	xhr.onreadystatechange = function () {
-	    if (this.readyState == 4) {
-	    	strResponse = this.responseText;
-			next();
-	    }
-	};
-	xhr.send('');
-}
-
-/* 
-<°Å·¡±İ¾×>    32,000</°Å·¡±İ¾×>
-<³â>2017</³â>
-<´ëÁö±Ç¸éÀû>33</´ëÁö±Ç¸éÀû>
-<¹ıÁ¤µ¿>¹æ¹èµ¿</¹ıÁ¤µ¿>
-<¿¬¸³´Ù¼¼´ë>(987-13)</¿¬¸³´Ù¼¼´ë>
-<¿ù>5</¿ù>
-<ÀÏ>1~10</ÀÏ>
-<Àü¿ë¸éÀû>74.55</Àü¿ë¸éÀû>
-<Áö¹ø>987-13</Áö¹ø>
-<Áö¿ªÄÚµå>11650</Áö¿ªÄÚµå>
-<Ãş>2</Ãş>
-*/
+/*
+ * <items>
+<item>
+<ê±°ë˜ê¸ˆì•¡>32,000</ê±°ë˜ê¸ˆì•¡>
+<ë…„>2017</ë…„>
+<ëŒ€ì§€ê¶Œë©´ì >33</ëŒ€ì§€ê¶Œë©´ì >
+<ë²•ì •ë™>ë°©ë°°ë™</ë²•ì •ë™>
+<ì—°ë¦½ë‹¤ì„¸ëŒ€>(987-13)</ì—°ë¦½ë‹¤ì„¸ëŒ€>
+<ì›”>5</ì›”>
+<ì¼>1~10</ì¼>
+<ì „ìš©ë©´ì >74.55</ì „ìš©ë©´ì >
+<ì§€ë²ˆ>987-13</ì§€ë²ˆ>
+<ì§€ì—­ì½”ë“œ>11650</ì§€ì—­ì½”ë“œ>
+<ì¸µ>2</ì¸µ>
+</item>
+</items> í…ŒìŠ¤íŠ¸
+ */
 var xml;
 
 function parseResponse() {
-	
-	var addr = "1170-3";
+	var addr = search_detail_addr;
+	//var addr = "387-2";
+	//var addr = "1170-3";
 	
 	var parser = new DOMParser();
 	var xmlDoc = parser.parseFromString(strResponse,"text/xml");
@@ -59,17 +60,17 @@ function parseResponse() {
 	//console.log(xmlDoc.getElementsByTagName("items"));
 	var itemArray = null;
 	if(xmlDoc.getElementsByTagName("items")[0] != undefined ) {
-		itemArray = xmlDoc.getElementsByTagName("items")[0].childNodes
-	}
-	xml.getElementsByTagName("items")[0].childNodes[0].getElementsByTagName("Áö¹ø")[0].innerHTML
-	
-	//document.getElementById("demo").innerHTML = itemArray[0];
-	for(var i = 0; i < itemArray.length; i++) {
-		if( itemArray[i].getElementsByTagName("Áö¹ø")[0].innerHTML == addr) {
-			printItem(itemArray[i].childNodes);
-			itemToJson(itemArray[i].childNodes);
+		itemArray = xmlDoc.getElementsByTagName("items")[0].childNodes;
+		for(var i = 0; i < itemArray.length; i++) {
+			if( itemArray[i].getElementsByTagName("ì§€ë²ˆ")[0].innerHTML == addr) {
+				printItem(itemArray[i].childNodes);
+				itemToJson(itemArray[i].childNodes);
+			}
 		}
 	}
+	makeTable();
+	//xml.getElementsByTagName("items")[0].childNodes[0].getElementsByTagName("ì§€ë²ˆ")[0].innerHTML;
+	//document.getElementById("demo").innerHTML = itemArray[0];
 }
 
 function itemToJson(item) {
@@ -81,7 +82,7 @@ function itemToJson(item) {
 }
 
 function printItem(item) {
-	var demo = document.getElementById("demo");
+	var demo = document.getElementById("output");
 	for(var j = 0; j < item.length; j++) {
 		//demo.innerHTML += item[j].tagName + " : " + item[j].innerHTML.trim() + "<br>";
 		console.log(item[j].tagName + " : " + item[j].innerHTML.trim());
@@ -89,16 +90,23 @@ function printItem(item) {
 }
 
 function makeTable() {
+	if(searchResult.length == 0) return;
+
+	//var strOutput = document.getElementById("demo").innerHTML + "<p>";
+	document.getElementById("table").innerHTML = "";
+	var strHeader = "";
 	var strOutput = "";
-	var keys = ["³â", "°Å·¡±İ¾×", "Àü¿ë¸éÀû", "Ãş"];
+	var keys = ["ë…„", "ì›”", "ê±°ë˜ê¸ˆì•¡", "ì¸µ", "ì „ìš©ë©´ì ", "ëŒ€ì§€ê¶Œë©´ì ", "ë²•ì •ë™"];
+	//alert(keys.toString());
 	strOutput += "<table>";
 	for(var j = 0; j < keys.length; j++) {
 		strOutput += "<tr>";
+		strOutput += "<td>" + keys[j] + "</td>";
 		for(var i = 0; i < searchResult.length; i++) {
 			strOutput += "<td>" + searchResult[i][keys[j]] + "</td>";
 		}
 		strOutput += "</tr>";
 	}
 	strOutput += "</table>";
-	document.getElementById("demo").innerHTML = strOutput;
+	document.getElementById("table").innerHTML = strOutput;
 }

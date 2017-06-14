@@ -1,51 +1,79 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
-<meta charset="EUC-KR">
+<meta charset="UTF-8">
 <title>Insert title here</title>
+<script src="http://code.highcharts.com/highcharts.js"></script>
 <script type="text/javascript" src="housezzim.js"></script>
-
-
-
 </head>
 <body>
 <div>
-<table>
-<tr>
-<td>
-<select id="select_year"></select>
-</td>
-</tr>
-<tr>
-<td>
-<a href="#" onclick="javascript:fnSubmit(); return false;">
-<button id="searchBtn">Search</button>
-</a>
-</td>
-</tr>
-</table>
-</div>
-<div>
-<p id="demo"></p>
-</div>
-</body>
-<script type="text/javascript">
+		<table>
+			<tr>
+				<td>지역 코드</td>
+				<td><select id="select_lawd_cd"></select></td>
+				<td>동</td>
+				<td><input id="dong"></td>
+				<td>지번 주소</td>
+				<td><input id="addr"></td>
+				<td><button id="searchBtn">Search</button></td>
+			</tr>
 
-var yearList = {
-	    ValueA : 'Text A',
-	    ValueB : 'Text B',
-	    ValueC : 'Text C'
+		</table>
+		<a href="#" id="addr387">양재동 387-1</a>&nbsp;<a href="#" id="addr1170">개포동 1170-3</a>
+	</div>
+<div>
+<div id="chart_container">chart</div>
+<div id="table"></div>
+<div id="table_around"></div>
+</div>
+<div id="output"></div>
+</body>
+<script>
+
+	var lawd_List = {
+	   	'11650' : '양재동',
+	   	'11680' : '개포동'
 	};
 
-var select = document.getElementById("select_year");
-	for(index in yearList) {
-	    select.options[select.options.length] = new Option(yearList[index], index);
-	}
+	window.onload = function() {
+		var select = document.getElementById("select_lawd_cd");
+		for(index in lawd_List) {
+	    	select.options[select.options.length] = new Option(lawd_List[index], index);
+		}
+		select.selectedIndex = 0;
+	};
 
-function fnSubmit() {
-	getData();
-	//parseResponse();
-}
+	document.getElementById('searchBtn').addEventListener('click', function() {
+		var select = document.getElementById("select_lawd_cd");
+		var dong = document.getElementById("dong");
+		var addr = document.getElementById("addr");
+		
+		getData(Object.keys(lawd_List)[select.selectedIndex], lawd_List[select.selectedIndex], addr);
+	});
+	
+	document.getElementById('select_lawd_cd').addEventListener('change', function() {
+		var select = document.getElementById("select_lawd_cd");
+		var dong = document.getElementById("dong");
+		var addr = document.getElementById("addr");
+		dong.value = "";
+		addr.value = "";
+		switch(select.selectedIndex) {
+		case 0:
+		case 1:
+			dong.value = lawd_List[select.selectedIndex];
+			break;
+			default:
+		}
+	});
+
+	document.getElementById('addr387').addEventListener('click', function() {
+		getData('11650', "양재동", "387-1");
+	});
+
+	document.getElementById('addr1170').addEventListener('click', function() {
+		getData('11680', "개포동", "1170-3");
+	});
 	
 </script>
 
