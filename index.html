@@ -7,74 +7,140 @@
 <script type="text/javascript" src="housezzim.js"></script>
 </head>
 <body>
-<div>
-		<table>
-			<tr>
-				<td>지역 코드</td>
-				<td><select id="select_lawd_cd"></select></td>
-				<td>동</td>
-				<td><input id="dong"></td>
-				<td>지번 주소</td>
-				<td><input id="addr"></td>
-				<td><button id="searchBtn">Search</button></td>
-			</tr>
-
-		</table>
-		<a href="#" id="addr387">양재동 387-1</a>&nbsp;<a href="#" id="addr1170">개포동 1170-3</a>
+	<div>
+		<div>
+			<table>
+				<tr>
+					<td>거래 종료</td>
+					<td><select id="select_type"></select></td>
+					<td>지역 코드</td>
+					<td><select id="select_lawd_cd"></select></td>
+					<td>동</td>
+					<td><input id="dong"></td>
+					<td>지번 주소</td>
+					<td><input id="addr"></td>
+					<td><button id="searchBtn">Clear</button></td>
+				</tr>
+			</table>
+		</div>
+		<div>
+			<table>
+				<tr>
+					<td>즐겨찾기</td>
+					<td><a href="#" id="addr387">양재동 387-1</a></td>
+					<td><a href="#" id="addr1170">개포동 1170-3</a>
+				</tr>
+			</table>
+		</div>
+		<div>
+			<table>
+				<tr>
+					<td>매매</td>
+					<td><button id="btnShowRecord_trade">매매기록</button></td>
+					<td><button id="btnSummarizeVolume_trade">거래량</button></td>
+				</tr>
+				<tr>
+					<td>전월세</td>
+					<td><button id="btnShowRecord_rent">매매기록</button></td>
+					<td><button id="btnSummarizeVolume_rent">거래량</button></td>
+				</tr>
+			</table>
+		</div>
+		<br>
 	</div>
-<div>
-<div id="chart_container">chart</div>
-<div id="table"></div>
-<div id="table_around"></div>
-</div>
-<div id="output"></div>
+	<div>
+		<div id="chart_container"></div>
+		<h3>매매기록</h3>
+		<div id="table"></div>
+		<h3>거래량</h3>
+		<div id="volume_table"></div>
+		<h3>주변 매매기록</h3>
+		<div id="table_around"></div>
+	</div>
+	<div id="output"></div>
 </body>
 <script>
-
 	var lawd_List = {
-	   	'11650' : '양재동',
-	   	'11680' : '개포동'
+		'11650' : '양재동',
+		'11680' : '개포동'
 	};
+	
+	var type_List = {
+			'house_trade': '빌라 매매',
+			'house_rent': '빌라 전월세'
+	}
 
+	var type = document.getElementById("select_type");
+	var select = document.getElementById("select_lawd_cd");
+	var dong = document.getElementById("dong");
+	var addr = document.getElementById("addr");
+	
 	window.onload = function() {
-		var select = document.getElementById("select_lawd_cd");
-		for(index in lawd_List) {
-	    	select.options[select.options.length] = new Option(lawd_List[index], index);
+		for (index in lawd_List) {
+			select.options[select.options.length] = new Option(
+					lawd_List[index], index);
+		}
+		for (index in type_List) {
+			type.options[type.options.length] = new Option(
+					type_List[index], index);
 		}
 		select.selectedIndex = 0;
+		type.selectedIndex = 0;
 	};
 
-	document.getElementById('searchBtn').addEventListener('click', function() {
-		var select = document.getElementById("select_lawd_cd");
-		var dong = document.getElementById("dong");
-		var addr = document.getElementById("addr");
-		
-		getData(Object.keys(lawd_List)[select.selectedIndex], lawd_List[select.selectedIndex], addr);
-	});
+	document.getElementById('btnShowRecord_trade').addEventListener(
+			'click',
+			function() {
+				getData(Object.keys(type_List)[type.selectedIndex],
+						Object.keys(lawd_List)[select.selectedIndex],
+						dong.value, addr.value);
+			});
 	
-	document.getElementById('select_lawd_cd').addEventListener('change', function() {
-		var select = document.getElementById("select_lawd_cd");
-		var dong = document.getElementById("dong");
-		var addr = document.getElementById("addr");
-		dong.value = "";
-		addr.value = "";
-		switch(select.selectedIndex) {
-		case 0:
-		case 1:
-			dong.value = lawd_List[select.selectedIndex];
-			break;
-			default:
-		}
-	});
+	document.getElementById('btnSummarizeVolume_trade').addEventListener(
+			'click',
+			function() {
+				getData(Object.keys(type_List)[type.selectedIndex],
+						Object.keys(lawd_List)[select.selectedIndex],
+						dong.value, addr.value);
+			});
+	
+	document.getElementById('btnShowRecord_rent').addEventListener(
+			'click',
+			function() {
+				getData(Object.keys(type_List)[type.selectedIndex],
+						Object.keys(lawd_List)[select.selectedIndex],
+						dong.value, addr.value);
+			});
+
+	document.getElementById('btnSummarizeVolume_rent').addEventListener(
+			'click',
+			function() {
+				getData(Object.keys(type_List)[type.selectedIndex],
+						Object.keys(lawd_List)[select.selectedIndex],
+						dong.value, addr.value);
+			});
+	
+	document.getElementById('searchBtn').addEventListener('click', clear);
+	
+	document.getElementById('select_lawd_cd').addEventListener('change',
+			function() {
+				dong.value = "";
+				addr.value = "";
+			});
 
 	document.getElementById('addr387').addEventListener('click', function() {
-		getData('11650', "양재동", "387-1");
+		select.selectedIndex = Object.keys(lawd_List).indexOf('11650');
+		dong.value = "양재동";
+		addr.value = "387-1";
+		//getData('11650', "양재동", "387-1");
 	});
 
 	document.getElementById('addr1170').addEventListener('click', function() {
-		getData('11680', "개포동", "1170-3");
+		select.selectedIndex = Object.keys(lawd_List).indexOf('11680');
+		dong.value = "개포동";
+		addr.value = "1170-3";
+		//getData('11680', "개포동", "1170-3");
 	});
-	
 </script>
 
 </html>

@@ -20,6 +20,7 @@ var extention = '.xml';
 		var fs = require('fs');
 		var filename = cache_loc + trade_type + "\\" + lawd_cd + '_' + year_month + extention;
 		try {
+			if(!fs.existsSync(filename)) return null; 
 			var contents = fs.readFileSync(filename, 'utf8');
 			if (!contents) {
 				console.log("error! empty data in " + filename);
