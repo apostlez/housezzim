@@ -7,6 +7,7 @@ var search_type = "";
 
 var numbers_of_result = {};
 var searchAroundResult = [];
+var chart = null;
 /*
 item scheme of summary_of_result
 {
@@ -39,11 +40,8 @@ function getData(trade_type, lawd_cd, addr, detail_addr) {
 			}
 		}
 	}
-
-//	strResponse = dataHandler.readCachedData("11680", "201604");
-//	if(!strResponse) {
-//		getDataOfYear( "201612", parseResponse);
-//	}
+	createChart();
+	updateChart();
 }
 
 /*
@@ -107,8 +105,6 @@ function parseResponse() {
 	makeTable();
 	makeSummary();
 	makeTableAround();
-	//xml.getElementsByTagName("items")[0].childNodes[0].getElementsByTagName("지번")[0].innerHTML;
-	//document.getElementById("demo").innerHTML = itemArray[0];
 }
 
 function itemToJson(item) {
@@ -224,4 +220,75 @@ function clear() {
 	numbers_of_result = {};
 	summary_of_result = {};
 	searchAroundResult = [];
+};
+
+function createChart() {
+	chart = Highcharts.chart('chart_container', {
+    title: {
+        text: 'Record of Trade'
+    },
+
+    yAxis: {
+        title: {
+            text: 'Number'
+        }
+    },
+	xAxis: {
+		type: 'datetime',
+		labels: {
+			format: '{value:%Y-%m}',
+		}
+	},
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    series: []
+});
+};
+
+function updateChart() {
+	var series_list = {};
+
+	if(searchResult.length == 0) return;
+	var keys;
+	var type;
+	if(search_type == "house_trade") {
+		keys = trade_keys;
+		type = "매매";
+	}
+	else if(search_type == "house_rent") {
+		keys = rent_keys;
+		type = "전월세";
+	}
+	else {
+		console.log("not implemented:" + search_type);
+		return; 
+	}
+	// trade recode
+	for(var i = 0; i < searchResult.length; i++) {
+		var size = type + " " + searchResult[i]["법정동"] + " " + searchResult[i]["전용면적"];
+		if(!series_list[size]) {
+			series_list[size] = chart.addSeries({
+				name:size,
+				data:[]
+			});
+		}
+		var d = Date.UTC(parseInt(searchResult[i]["년"]), parseInt(searchResult[i]["월"]), 1);
+		series_list[size].addPoint([d, parseInt(searchResult[i]["거래금액"].replace(",", ""))]);
+	}
+	// trade around
+	for(var i = 0; i < searchAroundResult.length; i++) {
+		var size = type + " " + searchResult[i]["법정동"] + " " + searchResult[i]["전용면적"];
+		if(!series_list[size]) {
+			series_list[size] = chart.addSeries({
+				name:size,
+				data:[]
+			});
+		}
+		var d = Date.UTC(parseInt(searchAroundResult[i]["년"]), parseInt(searchAroundResult[i]["월"]), 1);
+		series_list[size].addPoint([d, parseInt(searchAroundResult[i]["거래금액"].replace(",", ""))]);
+	}
+	
 }
