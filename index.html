@@ -29,6 +29,8 @@
 					<td>즐겨찾기</td>
 					<td><a href="#" id="addr387">양재동 387-1</a></td>
 					<td><a href="#" id="addr1170">개포동 1170-3</a>
+					<td><a href="#" id="addr154">아파트 양재동 154-2</a></td>
+					
 				</tr>
 			</table>
 		</div>
@@ -67,7 +69,8 @@
 	
 	var type_List = {
 			'house_trade': '빌라 매매',
-			'house_rent': '빌라 전월세'
+			'house_rent': '빌라 전월세',
+			'apart_trade': '아파트 매매'
 	}
 
 	var type = document.getElementById("select_type");
@@ -141,6 +144,14 @@
 		addr.value = "1170-3";
 		//getData('11680', "개포동", "1170-3");
 	});
+	
+	document.getElementById('addr154').addEventListener('click', function() {
+		select.selectedIndex = Object.keys(lawd_List).indexOf('11650');
+		dong.value = "양재동";
+		addr.value = "154-2";
+		//getData('11680', "개포동", "1170-3");
+	});
+	
 </script>
 
 </html>

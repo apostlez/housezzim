@@ -8,8 +8,11 @@ var search_type = "";
 var numbers_of_result = {};
 var searchAroundResult = [];
 var chart = null;
+var average = {};
+
+
 /*
-item scheme of summary_of_result
+item scheme of numbers_of_result
 {
 	<year> : {
 		<month>: <number>,
@@ -25,13 +28,13 @@ function getData(trade_type, lawd_cd, addr, detail_addr) {
 	search_addr = addr;
 	search_detail_addr = detail_addr;
 	var yearStart = 2006;
-	var ymEnd = "201705";
+	var ymEnd = "201706";
 	var month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 	
 	var dataHandler = require("./dataHandler.js");
-	for(var i=yearStart;i<2017;i++) {
+	for(var i=yearStart;i<2018;i++) {
 		for(var j=0;j<12;j++) {
-			if(ymEnd == (i + month[j])) return; 
+			if(ymEnd == (i + month[j])) break; 
 			strResponse = dataHandler.readCachedData(trade_type, lawd_cd, i + month[j]);
 			if(!strResponse) {
 				dataHandler.getDataOfYear(trade_type, lawd_cd, i + month[j], parseResponse);
@@ -68,29 +71,35 @@ function parseResponse() {
 	var dong = search_addr;
 	//var addr = "387-2";
 	//var addr = "1170-3";
+	var sum_price = 0;
+	var sum_size = 0;
 	
 	var parser = new DOMParser();
+	// hot spot
 	var xmlDoc = parser.parseFromString(strResponse,"text/xml");
 	xml = xmlDoc;
 	//console.log(xmlDoc.getElementsByTagName("items"));
 	var itemArray = null;
 	if(xmlDoc.getElementsByTagName("items")[0] != undefined ) {
 		itemArray = xmlDoc.getElementsByTagName("items")[0].childNodes;
+		
+		var year = itemArray[0].getElementsByTagName("년")[0].innerHTML.trim();
+		var month = itemArray[0].getElementsByTagName("월")[0].innerHTML.trim();
+		if(numbers_of_result[year] == undefined) numbers_of_result[year] = {};
+		if(numbers_of_result[year][month] == undefined) numbers_of_result[year][month] = 0;
+
+		
 		for(var i = 0; i < itemArray.length; i++) {
 			if( itemArray[i].getElementsByTagName("법정동")[0].innerHTML.trim() == dong) {
 				// count volume of dong
-				var year = itemArray[i].getElementsByTagName("년")[0].innerHTML.trim();
-				var month = itemArray[i].getElementsByTagName("월")[0].innerHTML.trim();
-				if(numbers_of_result[year] == undefined) numbers_of_result[year] = {};
-				if(numbers_of_result[year][month] == undefined) numbers_of_result[year][month] = 0;
 				numbers_of_result[year][month]++;
 				// save record of full addr
 				if( itemArray[i].getElementsByTagName("지번")[0].innerHTML == addr) {
-					printItem(itemArray[i].childNodes);
+					//printItem(itemArray[i].childNodes);
 					itemToJson(itemArray[i].childNodes);
 				}
 				// save record of same block
-				if( itemArray[i].getElementsByTagName("지번")[0].innerHTML.split('-')[0] == addr.split('-')[0]) {
+				else if( itemArray[i].getElementsByTagName("지번")[0].innerHTML.split('-')[0] == addr.split('-')[0]) {
 					var obj = {};
 					var item = itemArray[i].childNodes;
 					for(var j = 0; j < item.length; j++) {
@@ -98,8 +107,19 @@ function parseResponse() {
 					}
 					searchAroundResult.push(obj);
 				}
+				// data collect to calc average
+				sum_price += itemArray[i].getElementsByTagName("거래금액")[0].innerHTML.replace(",", "") *1;
+				sum_size += itemArray[i].getElementsByTagName("전용면적")[0].innerHTML *1;
+
 
 			}
+		}
+		// calc average
+		if(sum_price > 0) {
+			if(average[year] == undefined) average[year] = {};
+			//average[year][month] = parseFloat(((sum_price / sum_size) * 50).toFixed(2)); // / itemArray.length 
+			average[year][month] = ((sum_price / sum_size) * 50).toFixed(2) *1; // / itemArray.length
+			//console.log(average);
 		}
 	}
 	makeTable();
@@ -125,6 +145,7 @@ function printItem(item) {
 
 var trade_keys = ["년", "월", "거래금액", "층", "전용면적", "대지권면적", "법정동", "지번"];
 var rent_keys = ["년", "월", "보증금액", "월세금액", "층", "전용면적", "법정동", "지번"];
+var trade_keys_apart = ["년", "월", "거래금액", "아파트", "층", "전용면적", "법정동", "지번"];
 
 function makeTable() {
 	if(searchResult.length == 0) return;
@@ -136,6 +157,7 @@ function makeTable() {
 	var keys;
 	if(search_type == "house_trade") keys = trade_keys;
 	else if(search_type == "house_rent") keys = rent_keys;
+	else if(search_type == "apart_trade") keys = trade_keys_apart;
 	else {
 		console.log("not implemented:" + search_type);
 		return; 
@@ -193,6 +215,7 @@ function makeTableAround() {
 	var keys;
 	if(search_type == "house_trade") keys = trade_keys;
 	else if(search_type == "house_rent") keys = rent_keys;
+	else if(search_type == "apart_trade") keys = trade_keys_apart;
 	else {
 		console.log("not implemented:" + search_type);
 		return; 
@@ -220,6 +243,7 @@ function clear() {
 	numbers_of_result = {};
 	summary_of_result = {};
 	searchAroundResult = [];
+	average = [];
 };
 
 function createChart() {
@@ -262,6 +286,10 @@ function updateChart() {
 		keys = rent_keys;
 		type = "전월세";
 	}
+	else if(search_type == "apart_trade") {
+		keys = trade_keys_apart;
+		type = "아파트 매매";
+	}
 	else {
 		console.log("not implemented:" + search_type);
 		return; 
@@ -275,20 +303,40 @@ function updateChart() {
 				data:[]
 			});
 		}
-		var d = Date.UTC(parseInt(searchResult[i]["년"]), parseInt(searchResult[i]["월"]), 1);
+		var d = Date.UTC(parseInt(searchResult[i]["년"]), parseInt(searchResult[i]["월"])-1);
 		series_list[size].addPoint([d, parseInt(searchResult[i]["거래금액"].replace(",", ""))]);
 	}
 	// trade around
 	for(var i = 0; i < searchAroundResult.length; i++) {
-		var size = type + " " + searchResult[i]["법정동"] + " " + searchResult[i]["전용면적"];
+		//console.log(searchAroundResult[i]);
+		var size = type + " " + searchAroundResult[i]["법정동"] + " " + searchAroundResult[i]["전용면적"];
 		if(!series_list[size]) {
 			series_list[size] = chart.addSeries({
 				name:size,
 				data:[]
 			});
 		}
-		var d = Date.UTC(parseInt(searchAroundResult[i]["년"]), parseInt(searchAroundResult[i]["월"]), 1);
+		var d = Date.UTC(parseInt(searchAroundResult[i]["년"]), parseInt(searchAroundResult[i]["월"])-1);
 		series_list[size].addPoint([d, parseInt(searchAroundResult[i]["거래금액"].replace(",", ""))]);
+		//console.log([d, parseInt(searchAroundResult[i]["거래금액"].replace(",", ""))]);
 	}
-	
+	// trade average of dong
+	var avg_series_name = "50기준 평균";
+	if(!series_list[avg_series_name]) {
+		series_list[avg_series_name] = chart.addSeries({
+			name:avg_series_name,
+			data:[]
+		});
+	}
+	var avg_year_array = Object.keys(average);
+	for(var i = 0; i < avg_year_array.length; i++) {
+		var avg_month_array = Object.keys(average[avg_year_array[i]]);
+		for(var j = 0; j < avg_month_array.length; j++) {
+			var avg = average[avg_year_array[i]][avg_month_array[j]];
+			var d = Date.UTC(parseInt(avg_year_array[i]), parseInt(avg_month_array[j])-1);
+			var p = [d, avg];
+			//console.log(p);
+			series_list[avg_series_name].addPoint([d, avg]);
+		}
+	}
 }
