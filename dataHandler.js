@@ -15,10 +15,20 @@ var extention = '.xml';
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = instance;
 	}
+	
+	function getFilename(trade_type, lawd_cd, year_month) {
+		var filename = cache_loc + trade_type + "\\" + lawd_cd + '_' + year_month + extention;
+		return filename;
+	};
+
+	function getFilenameExt(trade_type, lawd_cd, year_month, ext) {
+		var filename = cache_loc + trade_type + "\\" + lawd_cd + '_' + year_month + ext;
+		return filename;
+	};
 
 	instance.readCachedData = function(trade_type, lawd_cd, year_month) {
 		var fs = require('fs');
-		var filename = cache_loc + trade_type + "\\" + lawd_cd + '_' + year_month + extention;
+		var filename = getFilename(trade_type, lawd_cd, year_month);
 		try {
 			if(!fs.existsSync(filename)) return null; 
 			var contents = fs.readFileSync(filename, 'utf8');
@@ -35,7 +45,7 @@ var extention = '.xml';
 	instance.writeCache = function(trade_type, lawd_cd, year_month, data) {
 		var fs = require('fs');
 		var path = cache_loc + trade_type;
-		var filename = path + "\\" + lawd_cd + '_' + year_month + extention;
+		var filename = getFilename(trade_type, lawd_cd, year_month);
 		
 		var exception_func = function(err) {
 					if(err) {
@@ -71,9 +81,28 @@ var extention = '.xml';
 		    }
 		};
 		xhr.send('');
-	}
+	};
 	
-
-
-
+	instance.cacheXml2json = function(trade_type, lawd_cd, year_month, callback) {
+		var fs = require('fs');
+		var xml2js = require('xml2js');
+		var parser = new xml2js.Parser();
+		var filename = getFilename(trade_type, lawd_cd, year_month);
+		try {
+			if(!fs.existsSync(filename)) return null; 
+			fs.readFile(filename, 'utf8', function(err, data){
+				parser.parseString(data, function (err, result) {
+				    var outputFile = getFilenameExt(trade_type, lawd_cd, year_month, ".json");
+				    fs.writeFile(outputFile, JSON.stringify(result), 'utf8', function(err) {
+						if(err) {
+							console.log(err);
+						}
+					});
+				    callback(err, result);
+				});
+			});
+		} catch(e) {
+			console.log(e);
+		}
+	};
 }());

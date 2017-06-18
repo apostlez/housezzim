@@ -340,3 +340,10 @@ function updateChart() {
 		}
 	}
 }
+
+function makeCache2Json(trade_type, lawd_cd, year_month) {
+	var dataHandler = require("./dataHandler.js");
+	dataHandler.cacheXml2json(trade_type, lawd_cd, year_month, function(err, data) {
+		console.log(data);
+	});
+};

@@ -11,7 +11,7 @@
 		<div>
 			<table>
 				<tr>
-					<td>거래 종료</td>
+					<td>거래 종류</td>
 					<td><select id="select_type"></select></td>
 					<td>지역 코드</td>
 					<td><select id="select_lawd_cd"></select></td>
@@ -37,14 +37,14 @@
 		<div>
 			<table>
 				<tr>
-					<td>매매</td>
+					<td>빌라 매매</td>
 					<td><button id="btnShowRecord_trade">매매기록</button></td>
-					<td><button id="btnSummarizeVolume_trade">거래량</button></td>
+					<td><button id="btnSummarizeVolume_trade">Test</button></td>
 				</tr>
 				<tr>
-					<td>전월세</td>
+					<td>빌라 전월세</td>
 					<td><button id="btnShowRecord_rent">매매기록</button></td>
-					<td><button id="btnSummarizeVolume_rent">거래량</button></td>
+					<td><button id="btnSummarizeVolume_rent">Test</button></td>
 				</tr>
 			</table>
 		</div>
@@ -94,6 +94,7 @@
 	document.getElementById('btnShowRecord_trade').addEventListener(
 			'click',
 			function() {
+				type.selectedIndex = 0;
 				getData(Object.keys(type_List)[type.selectedIndex],
 						Object.keys(lawd_List)[select.selectedIndex],
 						dong.value, addr.value);
@@ -102,14 +103,15 @@
 	document.getElementById('btnSummarizeVolume_trade').addEventListener(
 			'click',
 			function() {
-				getData(Object.keys(type_List)[type.selectedIndex],
+				makeCache2Json(Object.keys(type_List)[type.selectedIndex],
 						Object.keys(lawd_List)[select.selectedIndex],
-						dong.value, addr.value);
+						"201705");
 			});
 	
 	document.getElementById('btnShowRecord_rent').addEventListener(
 			'click',
 			function() {
+				type.selectedIndex = 1;
 				getData(Object.keys(type_List)[type.selectedIndex],
 						Object.keys(lawd_List)[select.selectedIndex],
 						dong.value, addr.value);
