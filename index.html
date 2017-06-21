@@ -30,7 +30,7 @@
 					<td><a href="#" id="addr387">양재동 387-1</a></td>
 					<td><a href="#" id="addr1170">개포동 1170-3</a>
 					<td><a href="#" id="addr154">아파트 양재동 154-2</a></td>
-					
+					<td><a href="#" id="addr386">양재동 386-2</a></td>
 				</tr>
 			</table>
 		</div>
@@ -40,6 +40,7 @@
 					<td>빌라 매매</td>
 					<td><button id="btnShowRecord_trade">매매기록</button></td>
 					<td><button id="btnSummarizeVolume_trade">Test</button></td>
+					<td><button id="btnAnalyze_trade">Use Json</button></td>
 				</tr>
 				<tr>
 					<td>빌라 전월세</td>
@@ -103,9 +104,28 @@
 	document.getElementById('btnSummarizeVolume_trade').addEventListener(
 			'click',
 			function() {
-				makeCache2Json(Object.keys(type_List)[type.selectedIndex],
+				var yearStart = 2006;
+				var ymEnd = "201706";
+				var month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+				
+				var dataHandler = require("./dataHandler.js");
+				for(var i=yearStart;i<2018;i++) {
+					for(var j=0;j<12;j++) {
+						if(ymEnd == (i + month[j])) break; 
+						makeCache2Json(Object.keys(type_List)[type.selectedIndex],
+								Object.keys(lawd_List)[select.selectedIndex],
+								i + month[j]);
+					}
+				}
+			});
+	
+	document.getElementById('btnAnalyze_trade').addEventListener(
+			'click',
+			function() {
+				type.selectedIndex = 0;
+				getDataFromJson(Object.keys(type_List)[type.selectedIndex],
 						Object.keys(lawd_List)[select.selectedIndex],
-						"201705");
+						dong.value, addr.value);
 			});
 	
 	document.getElementById('btnShowRecord_rent').addEventListener(
@@ -137,6 +157,13 @@
 		select.selectedIndex = Object.keys(lawd_List).indexOf('11650');
 		dong.value = "양재동";
 		addr.value = "387-1";
+		//getData('11650', "양재동", "387-1");
+	});
+
+	document.getElementById('addr386').addEventListener('click', function() {
+		select.selectedIndex = Object.keys(lawd_List).indexOf('11650');
+		dong.value = "양재동";
+		addr.value = "386-2";
 		//getData('11650', "양재동", "387-1");
 	});
 

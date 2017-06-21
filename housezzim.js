@@ -347,3 +347,84 @@ function makeCache2Json(trade_type, lawd_cd, year_month) {
 		console.log(data);
 	});
 };
+
+function parseJsonString() {
+	var addr = search_detail_addr;
+	var dong = search_addr;
+
+	var sum_price = 0;
+	var sum_size = 0;
+	
+	var doc = JSON.parse(strResponse);
+
+	var itemArray = doc.response.body[0].items[0].item;
+	if(itemArray != undefined ) {
+		
+		var year = itemArray[0]["년"][0].trim();
+		var month = itemArray[0]["월"][0].trim();
+		if(numbers_of_result[year] == undefined) numbers_of_result[year] = {};
+		if(numbers_of_result[year][month] == undefined) numbers_of_result[year][month] = 0;
+
+		
+		for(var i = 0; i < itemArray.length; i++) {
+			if( itemArray[i]["법정동"][0].trim() == dong) {
+				// count volume of dong
+				numbers_of_result[year][month]++;
+				// data collect to calc average
+				sum_price += itemArray[i]["거래금액"][0].replace(",", "") *1;
+				sum_size += itemArray[i]["전용면적"][0]*1;
+				// save record of full addr
+				if( itemArray[i]["지번"][0] == addr) {
+					for(var key in itemArray[i]) {
+						itemArray[i][key] = itemArray[i][key][0];
+					}
+					searchResult.push(itemArray[i]);
+				}
+				// save record of same block
+				else if( itemArray[i]["지번"][0].split('-')[0] == addr.split('-')[0]) {
+					for(var key in itemArray[i]) {
+						itemArray[i][key] = itemArray[i][key][0];
+					}
+					searchAroundResult.push(itemArray[i]);
+				} 
+			}
+		}
+		// calc average
+		if(sum_price > 0) {
+			if(average[year] == undefined) average[year] = {};
+			//average[year][month] = parseFloat(((sum_price / sum_size) * 50).toFixed(2)); // / itemArray.length 
+			average[year][month] = ((sum_price / sum_size) * 50).toFixed(2) *1; // / itemArray.length
+			//console.log(average);
+		}
+	}
+	makeTable();
+	makeSummary();
+	makeTableAround();
+};
+
+function getDataFromJson(trade_type, lawd_cd, addr, detail_addr) {
+	search_type = trade_type;
+	search_addr = addr;
+	search_detail_addr = detail_addr;
+	var yearStart = 2006;
+	var ymEnd = "201706";
+	var month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+	
+	var dataHandler = require("./dataHandler.js");
+	for(var i=yearStart;i<2018;i++) {
+		for(var j=0;j<12;j++) {
+			if(ymEnd == (i + month[j])) break; 
+			strResponse = dataHandler.readCachedJson(trade_type, lawd_cd, i + month[j]);
+			if(!strResponse) {
+				dataHandler.getDataOfYear(trade_type, lawd_cd, i + month[j],
+						function () {
+							dataHandler.cacheXml2json(trade_type, lawd_cd, i + month[j], parseJsonString);
+						});
+			} else {
+				parseJsonString();
+			}
+		}
+	}
+	createChart();
+	updateChart();
+};

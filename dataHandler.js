@@ -42,6 +42,22 @@ var extention = '.xml';
 		return contents;
 	};
 
+	instance.readCachedJson = function(trade_type, lawd_cd, year_month) {
+		var fs = require('fs');
+		var filename = getFilenameExt(trade_type, lawd_cd, year_month, '.json');
+		try {
+			if(!fs.existsSync(filename)) return null; 
+			var contents = fs.readFileSync(filename, 'utf8');
+			if (!contents) {
+				console.log("error! empty data in " + filename);
+			}
+		} catch(e) {
+			console.log("file not exist:" + filename);
+			console.log(e);
+		}
+		return contents;
+	};
+
 	instance.writeCache = function(trade_type, lawd_cd, year_month, data) {
 		var fs = require('fs');
 		var path = cache_loc + trade_type;
