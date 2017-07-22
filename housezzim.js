@@ -416,10 +416,12 @@ function getDataFromJson(trade_type, lawd_cd, addr, detail_addr) {
 			if(ymEnd == (i + month[j])) break; 
 			strResponse = dataHandler.readCachedJson(trade_type, lawd_cd, i + month[j]);
 			if(!strResponse) {
+				// if json file is not exist
 				dataHandler.getDataOfYear(trade_type, lawd_cd, i + month[j],
 						function () {
 							dataHandler.cacheXml2json(trade_type, lawd_cd, i + month[j], parseJsonString);
 						});
+				// json file is exist
 			} else {
 				parseJsonString();
 			}
